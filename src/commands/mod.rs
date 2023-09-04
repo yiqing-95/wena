@@ -14,7 +14,7 @@ pub struct Command<TInput: Input + ?Sized, TOutput: Output + ?Sized> {
     pub name: String,
     pub definition: Vec<Arg<'static>>,
     pub description: String,
-    pub handler: Handler<TInput, TOutput>,
+    pub handler: Box<dyn Handler<TInput, TOutput>>,
 }
 
 impl Command<ArgvInput, ConsoleOutput> {
@@ -59,11 +59,13 @@ impl<TInput: Input + ?Sized, TOutput: Output + ?Sized>
     }
 
     pub fn handler(mut self, value: Handler<TInput, TOutput>) -> Self {
-        self.handler = value;
+        self.handler = Box::new(value);
 
         self
     }
 }
 
 type Handler<TInput, TOutput> =
-    fn(&mut Application<TInput, TOutput>) -> Result<i32, &'static str>;
+        //  fn(&mut Application<TInput, TOutput>) -> Result<i32, &'static str>;
+        // Send + Sync + 'static + 
+        Fn(&mut Application<TInput, TOutput>) -> Result<i32, &'static str>;
